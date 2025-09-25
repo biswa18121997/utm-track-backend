@@ -13,7 +13,8 @@ const allowedOrigins = [
   "http://localhost:5174",
   "https://flashfire-frontend-hoisted.vercel.app",
   "https://flashfirejobs.com",
-  "https://www.flashfirejobs.com"
+  "https://www.flashfirejobs.com",
+  "https://flashfire-frontend-hoisted.vercel.app/"
 ];
 
 app.use(
