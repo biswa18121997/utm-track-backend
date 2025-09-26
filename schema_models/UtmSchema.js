@@ -53,6 +53,7 @@ const LinkCampaignUtmSchema = new mongoose.Schema({
   campaign_name: { type: String, required: true },
   utm_source: { type: [SourceUTMSchema], required: true }, // array of campaigners
   createdAt: { type: Date, default: Date.now },
+  link_code : {type : String, required:true, default : Date.now}
 });
 
 /* ------------------ Click Schema ------------------ */
