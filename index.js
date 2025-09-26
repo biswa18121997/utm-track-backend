@@ -269,7 +269,7 @@ app.get("/r/:code", async (req, res) => {
 app.get("/api/report", async (_req, res) => {
   try {
     const baseUrl =
-      "https://flashfire-frontend-hoisted.vercel.app/book-free-demo";
+      "https://flashfire-frontend-hoisted.vercel.app";
     const campaigns = await LinkCampaignUtm.find({}, { __v: 0 })
       .sort({ createdAt: -1 })
       .lean();
