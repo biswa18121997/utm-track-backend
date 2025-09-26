@@ -15,6 +15,7 @@ const SourceUTMSchema = new mongoose.Schema({
   createdAt: { type: Date, default: Date.now },
   utm_source: { type: String, required: true },   // campaigner
   utm_campaign: { type: String, required: true }, // campaign
+  link_code: { type: String, required: true, unique: true }, // 👈 unique per campaigner
   total_clicks: { type: Number, default: 0 },
   unique_clicks: { type: Number, default: 0 },
   unique_ips: { type: [String], default: [] }, // store unique IPs
@@ -23,10 +24,10 @@ const SourceUTMSchema = new mongoose.Schema({
 /* ------------------ LinkCampaign Schema (campaign + campaigners) ------------------ */
 const LinkCampaignUtmSchema = new mongoose.Schema({
   campaign_name: { type: String, required: true },
-  link_code: { type: String, required: true, unique: true }, // short code for campaign
-  utm_source: { type: [SourceUTMSchema], required: true },   // array of campaigners
   createdAt: { type: Date, default: Date.now },
+  utm_source: { type: [SourceUTMSchema], required: true },
 });
+
 
 /* ------------------ Exports ------------------ */
 export const Click = mongoose.models.Click || mongoose.model("Click", ClickSchema);

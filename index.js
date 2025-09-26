@@ -186,9 +186,51 @@ app.get("/r/:code", async (req, res) => {
 
 // Admin report: list all links with counts
 app.get("/api/report", async (_req, res) => {
-  const rows = await LinkCampaignUtm.find({}, { __v: 0 }).sort({ createdAt: -1 }).lean();
-  res.json({ ok: true, rows });
+  try {
+    const baseUrl =
+      "https://flashfire-frontend-hoisted.vercel.app/book-free-demo";
+    const campaigns = await LinkCampaignUtm.find({}, { __v: 0 })
+      .sort({ createdAt: -1 })
+      .lean();
+
+    const rows = campaigns.map((campaign) => {
+      // calculate campaign-level totals
+      const totalClicks = campaign.utm_source.reduce(
+        (sum, s) => sum + (s.total_clicks || 0),
+        0
+      );
+      const totalUniques = campaign.utm_source.reduce(
+        (sum, s) => sum + (s.unique_clicks || 0),
+        0
+      );
+
+      return {
+        _id: campaign._id,
+        campaign_name: campaign.campaign_name,
+        link_code: campaign.link_code,
+        createdAt: campaign.createdAt,
+        totalClicks,
+        totalUniques,
+        campaigners: campaign.utm_source.map((s) => ({
+          utm_source: s.utm_source,
+          total_clicks: s.total_clicks,
+          unique_clicks: s.unique_clicks,
+          // You can generate frontend link per campaigner here
+          link: `${baseUrl}?ref=${encode(
+            campaign.campaign_name,
+            s.utm_source
+          )}`,
+        })),
+      };
+    });
+
+    res.json({ ok: true, rows });
+  } catch (err) {
+    console.error("Error generating report:", err);
+    res.status(500).json({ ok: false, error: "server_error" });
+  }
 });
+
 
 // Optional: get report by campaign
 app.get("/api/report/:campaignName", async (req, res) => {
