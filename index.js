@@ -15,7 +15,7 @@ const allowedOrigins = [
   "https://flashfirejobs.com",
   "https://www.flashfirejobs.com",
   "https://flashfire-frontend-hoisted.vercel.app/",
-  "https://utm-track-frontend.vercel.app/"
+  "https://utm-track-frontend.vercel.app"
 ];
 
 app.use(
@@ -41,7 +41,7 @@ app.use(express.json());
 
 const PORT = process.env.PORT || process.env.Port || 5000;
 const MONGO_URI = process.env.MONGO_DB_URI || process.env.MONGO_URI || "mongodb://127.0.0.1:27017/campaign-tracker";
-const BASE_URL = process.env.BASE_URL || `http://localhost:${PORT}`;
+const BASE_URL = process.env.BASE_URL_PROD ;
 
 // ---- DB connect ----
 mongoose.connect(MONGO_URI).then(() => {

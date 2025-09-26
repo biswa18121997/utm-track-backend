@@ -45,7 +45,7 @@ export default async function createCampaign(req, res) {
       await campaign.save();
 
       const link = `${
-        process.env.FRONTEND_URL || "http://localhost:5174/book-free-demo"
+        process.env.FRONTEND_URL || "https://flashfire-frontend-hoisted.vercel.app/book-free-demo"
       }?ref=${encode(campaignName, cleanCampaigner)}`;
 
       return res.json({
@@ -71,7 +71,7 @@ export default async function createCampaign(req, res) {
     await campaign.save();
 
     const link = `${
-      process.env.FRONTEND_URL || "http://localhost:5174/book-free-demo"
+      "https://flashfire-frontend-hoisted.vercel.app/book-free-demo"
     }?ref=${encode(campaignName, cleanCampaigner)}`;
 
     return res.json({
