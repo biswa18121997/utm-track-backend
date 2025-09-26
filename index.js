@@ -67,6 +67,87 @@ app.get("/", (_req, res) => res.status(200).send("Campaign Tracker is live"));
 
 app.post("/api/campaign/create", createCampaign);
 
+// app.post("/api/track", async (req, res) => {
+//   try {
+//     const {
+//       ref,
+//       userAgent,
+//       screenWidth,
+//       screenHeight,
+//       language,
+//       timezone,
+//     } = req.body;
+//     console.log(req.body);
+//     if (!ref) {
+//       return res.status(400).json({ ok: false, message: "Missing ref code" });
+//     }
+
+//     // Extract visitor IP
+//     const ip =
+//       req.headers["x-forwarded-for"]?.split(",")[0].trim() ||
+//       req.socket.remoteAddress;
+
+//     // Decode ref back into campaign + campaigner
+//     const { campaignName, campaignerName } = decode(ref);
+
+//     // Find campaign
+//     const campaign = await LinkCampaignUtm.findOne({
+//       campaign_name: campaignName,
+//     });
+//     if (!campaign) {
+//       return res
+//         .status(404)
+//         .json({ ok: false, message: "Campaign not found" });
+//     }
+
+//     // Find campaigner in campaign
+//     const source = campaign.utm_source.find(
+//       (s) => s.utm_source.toLowerCase() === campaignerName.toLowerCase()
+//     );
+//     if (!source) {
+//       return res
+//         .status(404)
+//         .json({ ok: false, message: "Campaigner not found" });
+//     }
+
+//     /* ------------------- Log Click (detailed) ------------------- */
+//     await Click.create({
+//       link_code: campaign.link_code,
+//       utm_source: campaignerName,
+//       utm_campaign: campaignName,
+//       ip,
+//       timestamp: new Date(),
+//       userAgent,
+//       screenWidth,
+//       screenHeight,
+//       language,
+//       timezone,
+//     });
+
+//     /* ------------------- Update Aggregates ------------------- */
+//     source.total_clicks += 1;
+
+//     if (!source.unique_ips.includes(ip)) {
+//       source.unique_ips.push(ip);
+//       source.unique_clicks = source.unique_ips.length;
+//     }
+
+//     await campaign.save();
+
+//     return res.json({
+//       ok: true,
+//       message: "Click tracked successfully",
+//       campaignName,
+//       campaignerName,
+//       ip,
+//       total: source.total_clicks,
+//       unique: source.unique_clicks,
+//     });
+//   } catch (err) {
+//     console.error("Error in tracking:", err);
+//     return res.status(500).json({ ok: false, error: "server_error" });
+//   }
+// });
 app.post("/api/track", async (req, res) => {
   try {
     const {
@@ -77,7 +158,7 @@ app.post("/api/track", async (req, res) => {
       language,
       timezone,
     } = req.body;
-    console.log(req.body);
+
     if (!ref) {
       return res.status(400).json({ ok: false, message: "Missing ref code" });
     }
@@ -95,9 +176,7 @@ app.post("/api/track", async (req, res) => {
       campaign_name: campaignName,
     });
     if (!campaign) {
-      return res
-        .status(404)
-        .json({ ok: false, message: "Campaign not found" });
+      return res.status(404).json({ ok: false, message: "Campaign not found" });
     }
 
     // Find campaigner in campaign
@@ -112,8 +191,8 @@ app.post("/api/track", async (req, res) => {
 
     /* ------------------- Log Click (detailed) ------------------- */
     await Click.create({
-      link_code: campaign.link_code,
-      utm_source: campaignerName,
+      link_code: source.link_code,  // ✅ FIXED
+      utm_source: source.utm_source,
       utm_campaign: campaignName,
       ip,
       timestamp: new Date(),
@@ -139,6 +218,8 @@ app.post("/api/track", async (req, res) => {
       message: "Click tracked successfully",
       campaignName,
       campaignerName,
+      utm_source: source.utm_source,
+      link_code: source.link_code,   // ✅ send back too
       ip,
       total: source.total_clicks,
       unique: source.unique_clicks,
