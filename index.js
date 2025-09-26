@@ -321,5 +321,5 @@ app.get("/api/report/:campaignName", async (req, res) => {
 });
 
 app.listen(PORT, () => {
-  console.log(`🚀 Server running at ${BASE_URL}`);
+  console.log(`🚀 Server running at Port :-${PORT}`);
 });
