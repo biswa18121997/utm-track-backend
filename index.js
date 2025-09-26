@@ -3,7 +3,7 @@ import dotenv from "dotenv";
 import mongoose from "mongoose";
 import cors from "cors";
 import createCampaign from "./controllers/NewCampaign.js";
-import { decode } from "./utils/CodeExaminer.js"; // reversible decode
+import { decode, encode} from "./utils/CodeExaminer.js"; // reversible decode
 import { LinkCampaignUtm, Click } from "./schema_models/UtmSchema.js";
 
 dotenv.config();
