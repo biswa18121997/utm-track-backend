@@ -63,91 +63,64 @@ function getClientIP(req) {
 }
 
 // ---- Routes ----
+app.post("/api/track/utm-campaign-lead", async (req, res) => {
+  try {
+    const { clientName, clientEmail, clientPhone, utmSource } = req.body;
+
+    if (!utmSource || !clientEmail) {
+      return res.status(400).json({ error: "utmSource and clientEmail are required" });
+    }
+
+    // 🔍 Find campaign that has a matching utm_source
+    const campaign = await LinkCampaignUtm.findOne({
+      "utm_source.utm_source": utmSource
+    });
+
+    if (!campaign) {
+      return res.status(404).json({ message: "No campaign found for this utmSource" });
+    }
+
+    // Get the specific UTM object inside the campaign
+    const utmEntry = campaign.utm_source.find(
+      (s) => s.utm_source === utmSource
+    );
+
+    if (!utmEntry) {
+      return res.status(404).json({ message: "UTM not found inside campaign" });
+    }
+
+    // Check if clientEmail already exists
+    const alreadyExists = utmEntry.conversions.some(
+      (c) => c.clientEmail.toLowerCase() === clientEmail.toLowerCase()
+    );
+
+    if (alreadyExists) {
+      return res.status(200).json({ message: "Client already exists, not added again" });
+    }
+
+    // Add new conversion
+    utmEntry.conversions.push({
+      clientName,
+      clientEmail,
+      clientPhone: clientPhone || "Not Provided",
+      bookingDate: new Date()
+    });
+
+    await campaign.save();
+
+    return res.status(201).json({
+      message: "✅ Conversion added successfully",
+      conversion: { clientName, clientEmail, clientPhone }
+    });
+  } catch (error) {
+    console.error("❌ Error in /api/track/utm-campaign-lead:", error);
+    res.status(500).json({ error: "Internal Server Error" });
+  }
+});
 app.get("/", (_req, res) => res.status(200).send("Campaign Tracker is live"));
 
 app.post("/api/campaign/create", createCampaign);
 
-// app.post("/api/track", async (req, res) => {
-//   try {
-//     const {
-//       ref,
-//       userAgent,
-//       screenWidth,
-//       screenHeight,
-//       language,
-//       timezone,
-//     } = req.body;
-//     console.log(req.body);
-//     if (!ref) {
-//       return res.status(400).json({ ok: false, message: "Missing ref code" });
-//     }
-
-//     // Extract visitor IP
-//     const ip =
-//       req.headers["x-forwarded-for"]?.split(",")[0].trim() ||
-//       req.socket.remoteAddress;
-
-//     // Decode ref back into campaign + campaigner
-//     const { campaignName, campaignerName } = decode(ref);
-
-//     // Find campaign
-//     const campaign = await LinkCampaignUtm.findOne({
-//       campaign_name: campaignName,
-//     });
-//     if (!campaign) {
-//       return res
-//         .status(404)
-//         .json({ ok: false, message: "Campaign not found" });
-//     }
-
-//     // Find campaigner in campaign
-//     const source = campaign.utm_source.find(
-//       (s) => s.utm_source.toLowerCase() === campaignerName.toLowerCase()
-//     );
-//     if (!source) {
-//       return res
-//         .status(404)
-//         .json({ ok: false, message: "Campaigner not found" });
-//     }
-
-//     /* ------------------- Log Click (detailed) ------------------- */
-//     await Click.create({
-//       link_code: campaign.link_code,
-//       utm_source: campaignerName,
-//       utm_campaign: campaignName,
-//       ip,
-//       timestamp: new Date(),
-//       userAgent,
-//       screenWidth,
-//       screenHeight,
-//       language,
-//       timezone,
-//     });
-
-//     /* ------------------- Update Aggregates ------------------- */
-//     source.total_clicks += 1;
-
-//     if (!source.unique_ips.includes(ip)) {
-//       source.unique_ips.push(ip);
-//       source.unique_clicks = source.unique_ips.length;
-//     }
-
-//     await campaign.save();
-
-//     return res.json({
-//       ok: true,
-//       message: "Click tracked successfully",
-//       campaignName,
-//       campaignerName,
-//       ip,
-//       total: source.total_clicks,
-//       unique: source.unique_clicks,
-//     });
-//   } catch (err) {
-//     console.error("Error in tracking:", err);
-//     return res.status(500).json({ ok: false, error: "server_error" });
-//   }
-// });
 app.post("/api/track", async (req, res) => {
   try {
     const {
